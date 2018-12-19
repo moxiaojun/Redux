@@ -1,47 +1,10 @@
-import React,{Component} from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
-import {createStore} from "./redux";
-const INCREASE = 'INCREASE';
-const DECREASE = 'DECREASE';
-
-//state是状态数，可以是任意结构，每个仓库只有一个state
-//action 是一个纯对象{type:'INCREASE',amount:3}{type:'DECREASE'}
-let reducer = (state = { number:0 },action)=>{
-    if (action===undefined) return state;
-    switch (action.type){
-        case INCREASE:
-            return {number:state.number+action.amount};
-        case DECREASE:
-            return {number:state.number-action.amount};
-        default:
-            return state
-    }
-};
-let store = createStore(reducer);
-class Counter extends Component{
-    constructor(){
-        super();
-        this.state = {number: store.getState().number};
-    }
-    componentWillMount(){
-         this.unsubscribe = store.subscribe(()=>{
-            this.setState({
-                number:store.getState().number
-            })
-        })
-    }
-    componentWillUnMount(){
-        this.unsubscribe();
-    }
-    render(){
-        return (
-            <div>
-                <p>{this.state.number}</p>
-                <button onClick={()=>store.dispatch({type:INCREASE,amount:2})}>+</button>
-                <button onClick={()=>store.dispatch({type:DECREASE,amount:2})}>-</button>
-            </div>
-        )
-    }
-}
-ReactDOM.render(<Counter/>,document.querySelector('#root'));
+import Todo from './componets/Todo'
+ReactDOM.render(
+    <div>
+        <Todo></Todo>
+    </div>
+    ,
+    document.querySelector('#root'));
 
