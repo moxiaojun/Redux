@@ -216,3 +216,39 @@ export default class Todo extends React.Component{
     }
 }
 ```
+
+-- 5.合并store，管理多个组件的state
+抽离Todo和counter页面中的reducer新建reducers文件，并在新建store.js中引用
+```
+import {createStore} from "../redux";
+import combineReducers from "./combineReducers"
+
+import counter from '../reducers/Counter';
+import todo from '../reducers/Todo';
+
+//合并reducer方法
+let reducer = combineReducers({
+    counter,
+    todo});
+let store = createStore(reducer);
+export {store};
+```
+新建一个 combineReducers.js
+```
+/**
+ * 旧状态 {number:0} {list:[]}
+ * 新状态 {counter:{number:0},todo:{list:[]}}
+ **/
+//合并reducers方法
+// reducers = {counter:reducer,todo:reducer}
+let combineReducers = (reducers)=>
+    (state={},action)=>{//返回一个reducer
+        let newState = {};
+        for (var key in reducers){//每次更新时调用全部的reducer执行
+            newState[key] = reducers[key](state[key],action)
+        }
+        return newState;
+
+    };
+export default combineReducers
+```

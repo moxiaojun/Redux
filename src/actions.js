@@ -1,0 +1,6 @@
+const INCREASE = 'INCREASE';
+const DECREASE = 'DECREASE';
+const ADD_TODO = 'ADD_TODO';
+const DEL_TODO = 'DEL_TODO';
+
+export {INCREASE, DECREASE,  ADD_TODO,  DEL_TODO}

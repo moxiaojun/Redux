@@ -1,37 +1,23 @@
 import React from 'react'
-import {createStore} from "../redux";
-const ADD = 'ADD';
-const DEL = 'DEL';
-let reducer = (state = { list:[] },action)=>{
-    if (action===undefined) return state;
-    switch (action.type){
-        case ADD:
-            return {list:[...state.list,action.value]};
-        case DEL:
-            let list = state.list;
-            list.splice(action.index,1);
-            //我们的状态具备不变性，每次应该返回一个新的对象
-            return {list:[...list]};
-        default:
-            return state
-    }
-};
-let store = createStore(reducer);
+import {store} from '../store/store'
+import {ADD_TODO,DEL_TODO} from "../actions";
+
 export default class Todo extends React.Component{
     constructor(props){
         super(props);
-        this.state = {list:store.getState().list};
+        this.state = {list:store.getState().todo.list};
     }
     handleKeyDown = (event)=>{
         if (event.keyCode === 13 && event.target.value.length>0) {
-            store.dispatch({type:ADD,value:event.target.value});
+            console.log(store.dispatch);
+            store.dispatch({type:ADD_TODO,value:event.target.value});
             event.target.value = '';
         }
     };
     componentWillMount(){
         this.unsubscribe = store.subscribe(()=>{
             this.setState({
-                list:store.getState().list
+                list:store.getState().todo.list
             })
         });
     }
@@ -44,7 +30,7 @@ export default class Todo extends React.Component{
                 <input type="text" onKeyDown={this.handleKeyDown}/>
                 <ul>
                     {
-                        this.state.list.map((todo,idx)=>(<li key={idx}>{todo}<button onClick={()=>store.dispatch({type:DEL,index:idx})}>-</button></li>))
+                        this.state.list.map((todo,idx)=>(<li key={idx}>{todo}<button onClick={()=>store.dispatch({type:DEL_TODO,index:idx})}>-</button></li>))
                     }
                 </ul>
             </div>
