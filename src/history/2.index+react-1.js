@@ -19,29 +19,19 @@ let reducer = (state = { number:0 },action)=>{
 };
 let store = createStore(reducer);
 class Counter extends Component{
-    constructor(){
-        super();
-        this.state = {number: store.getState().number};
-    }
-    componentWillMount(){
-         this.unsubscribe = store.subscribe(()=>{
-            this.setState({
-                number:store.getState().number
-            })
-        })
-    }
-    componentWillUnMount(){
-        this.unsubscribe();
-    }
     render(){
         return (
             <div>
-                <p>{this.state.number}</p>
+                <p>{store.getState().number}</p>
                 <button onClick={()=>store.dispatch({type:INCREASE,amount:2})}>+</button>
                 <button onClick={()=>store.dispatch({type:DECREASE,amount:2})}>-</button>
             </div>
         )
     }
 }
-ReactDOM.render(<Counter/>,document.querySelector('#root'));
-
+let render = ()=>{
+    ReactDOM.render(<Counter/>,document.querySelector('#root'));
+};
+render();
+//当仓库里的state发生变化的时候，会重新执行render,读取最新的状态数据并更新视图
+store.subscribe(render);

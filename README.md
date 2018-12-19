@@ -1,44 +1,160 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 学习Redux
+- 1.redux应用场景和工作原理
+```
+    //创建仓库
+    const createStore = (reducer)=>{
+        let state;
+        let listeners = [];//监听数组
+        let getState = ()=>state;
+        //向仓库发送action
+        let dispatch=(action)=>{
+            //传入老的state和action，返回新的state
+            state = reducer(state,action);
+            listeners.forEach(listener=>listener());
+        };
+        //订阅仓库内的状态变化事件，当状态发生变化后会调用监听函数
+        //订阅方法执行后会返回一个取消订阅的函数，调用它可以取消订阅
+        let subscribe =(listener)=>{
+            listeners.push(listener);
+            return ()=>{
+                listeners = listeners.filter(l=>listener!==l)
+            }
+        };
+        dispatch();
+        return {
+            getState,//获取最新的状态对象
+            subscribe,//订阅状态变化事件
+            dispatch
+        }
+    };
+    export {createStore}
+```
 
-## Available Scripts
+- 2.redux+jquery应用
+```
+    import {createStore} from "./redux";
+    import $ from 'jquery';
+    const INCREASE = 'INCREASE';
+    const DECREASE = 'DECREASE';
+    $('#root').append(`
+        <p id="counter"></p>
+        <button id="increaseBtn">+</button>
+        <button id="decreaseBtn">-</button>
+    `);
+    //state是状态数，可以是任意结构，每个仓库只有一个state
+    //action 是一个纯对象{type:'INCREASE',amount:3}{type:'DECREASE'}
+    let reducer = (state = { number:0 },action)=>{
+        if (action===undefined) return state;
+        switch (action.type){
+            case INCREASE:
+                return {number:state.number+action.amount};
+            case DECREASE:
+                return {number:state.number-action.amount};
+            default:
+                return state
+        }
+    };
+    let store = createStore(reducer);
+    console.log(store.getState());
+    let render = ()=>{
+        $('#counter').html(store.getState().number);
+    };
+    //当仓库里的state发生变化的时候，会重新执行render,读取最新的状态数据并更新视图
+    store.subscribe(render);
+    $('#increaseBtn').click(()=>store.dispatch({type:INCREASE,amount:3}));
+    $('#decreaseBtn').click(()=>store.dispatch({type:DECREASE,amount:1}));
+    render();
+```
 
-In the project directory, you can run:
+- 3.redux+react应用
+```
+    import React,{Component} from 'react'
+    import ReactDOM from 'react-dom'
+    import {createStore} from "./redux";
+    const INCREASE = 'INCREASE';
+    const DECREASE = 'DECREASE';
 
-### `npm start`
+    //state是状态数，可以是任意结构，每个仓库只有一个state
+    //action 是一个纯对象{type:'INCREASE',amount:3}{type:'DECREASE'}
+    let reducer = (state = { number:0 },action)=>{
+        if (action===undefined) return state;
+        switch (action.type){
+            case INCREASE:
+                return {number:state.number+action.amount};
+            case DECREASE:
+                return {number:state.number-action.amount};
+            default:
+                return state
+        }
+    };
+    let store = createStore(reducer);
+    class Counter extends Component{
+        render(){
+            return (
+                <div>
+                    <p>{store.getState().number}</p>
+                    <button onClick={()=>store.dispatch({type:INCREASE,amount:2})}>+</button>
+                    <button onClick={()=>store.dispatch({type:DECREASE,amount:2})}>-</button>
+                </div>
+            )
+        }
+    }
+    let render = ()=>{
+        ReactDOM.render(<Counter/>,document.querySelector('#root'));
+    };
+    render();
+    //当仓库里的state发生变化的时候，会重新执行render,读取最新的状态数据并更新视图
+    store.subscribe(render);
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```
+ react组件内部应用
+```
+import React,{Component} from 'react'
+import ReactDOM from 'react-dom'
+import {createStore} from "./redux";
+const INCREASE = 'INCREASE';
+const DECREASE = 'DECREASE';
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+//state是状态数，可以是任意结构，每个仓库只有一个state
+//action 是一个纯对象{type:'INCREASE',amount:3}{type:'DECREASE'}
+let reducer = (state = { number:0 },action)=>{
+    if (action===undefined) return state;
+    switch (action.type){
+        case INCREASE:
+            return {number:state.number+action.amount};
+        case DECREASE:
+            return {number:state.number-action.amount};
+        default:
+            return state
+    }
+};
+let store = createStore(reducer);
+class Counter extends Component{
+    constructor(){
+        super();
+        this.state = {number: store.getState().number};
+    }
+    componentWillMount(){
+         this.unsubscribe = store.subscribe(()=>{
+            this.setState({
+                number:store.getState().number
+            })
+        })
+    }
+    componentWillUnMount(){
+        this.unsubscribe();
+    }
+    render(){
+        return (
+            <div>
+                <p>{this.state.number}</p>
+                <button onClick={()=>store.dispatch({type:INCREASE,amount:2})}>+</button>
+                <button onClick={()=>store.dispatch({type:DECREASE,amount:2})}>-</button>
+            </div>
+        )
+    }
+}
+ReactDOM.render(<Counter/>,document.querySelector('#root'));
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
